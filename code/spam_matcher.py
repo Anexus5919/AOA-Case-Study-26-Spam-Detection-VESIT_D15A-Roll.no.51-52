@@ -53,3 +53,44 @@ def naive_search(text, pat, st, trace=None):
         if trace is not None:
             trace.append((s, text[s:s + m], used, j))
     return hits
+
+
+# ---------------------------------------------------------------- Rabin-Karp
+
+def poly_hash(s, q):
+    """Hash of s read as a base-D number, reduced mod q (Horner's rule)."""
+    v = 0
+    for ch in s:
+        v = (D * v + ord(ch)) % q
+    return v
+
+
+def rabin_karp_search(text, pat, st, q=Q_LARGE, trace=None):
+    n, m = len(text), len(pat)
+    if m == 0 or m > n:
+        return []
+    h = pow(D, m - 1, q)                 # weight of the leading character
+    p = poly_hash(pat, q)
+    t = poly_hash(text[:m], q)
+    hits = []
+    for s in range(n - m + 1):
+        st.windows += 1
+        status = ""
+        if t == p:
+            st.hash_hits += 1
+            j = 0
+            while j < m and text[s + j] == pat[j]:
+                j += 1
+            st.comparisons += j + 1 if j < m else m
+            if j == m:
+                hits.append(s)
+                status = "MATCH"
+            else:
+                st.spurious += 1
+                status = "SPURIOUS"
+        if trace is not None:
+            trace.append((s, text[s:s + m], t, status))
+        if s < n - m:                    # roll: drop text[s], add text[s+m]
+            t = (D * (t - ord(text[s]) * h) + ord(text[s + m])) % q
+            st.hash_updates += 1
+    return hits

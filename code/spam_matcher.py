@@ -262,3 +262,104 @@ MORE_KEYWORDS = [
     "verify your account", "wire transfer", "work from home", "you are a winner",
     "you have been selected", "your account", "50% off",
 ]
+
+
+# ---------------------------------------------------------------- helpers
+
+def show(s):
+    return '"' + s + '"'
+
+
+def rule(ch="-", width=92):
+    print(ch * width)
+
+
+def run_trace_all():
+    text, pat = EXCERPT, EXCERPT_PAT
+    n, m, q = len(text), len(pat), Q_DEMO
+    h, p = pow(D, m - 1, q), poly_hash(pat, q)
+    last, gs = bad_char_table(pat), good_suffix_table(pat)
+    print(f'Text T = {show(text)}  (n = {n})      Pattern P = {show(pat)}  (m = {m})')
+    print(f"Rabin-Karp : d = {D}, q = {q}, h = {D}^{m - 1} mod {q} = {h}, p = hash({show(pat)}) = {p}")
+    print("Boyer-Moore: last[] = " + ", ".join(f"{c}:{i}" for c, i in last.items())
+          + ", others:-1    good suffix gs[0..4] = " + " ".join(str(v) for v in gs))
+    rule("=")
+    st_n, st_r, st_b = Stats(), Stats(), Stats()
+    rows_n, rows_r, rows_b = [], [], []
+    naive_search(text, pat, st_n, rows_n)
+    rabin_karp_search(text, pat, st_r, q, rows_r)
+    boyer_moore_search(text, pat, st_b, rows_b)
+    bm = {r[0]: r for r in rows_b}
+    print(f"{'':12}| {'NAIVE':<20}| {'RABIN-KARP':<22}| BOYER-MOORE")
+    print(f"{'  s  window':<12}| {'cmp  result':<20}| {'t(s)  result':<22}| cmp  bad char  good suf  shift")
+    rule()
+    for (s, win, used, j), (_, _, t, status) in zip(rows_n, rows_r):
+        nres = "MATCH" if j == m else f"fail at j={j}"
+        rres = {"MATCH": "hit, MATCH", "SPURIOUS": "hit, SPURIOUS"}.get(status, "-")
+        if s in bm:
+            _, _, bused, _, _, bc, g, shift = bm[s]
+            bres = f" {bused:>3}  {'-' if bc is None else bc:>8}  {g:>8}  {shift:>5}"
+        else:
+            bres = "   skipped"
+        print(f"{s:>3}  {show(win):<7}|{used:>4}  {nres:<15}|{t:>5}  {rres:<16}|{bres}")
+    rule()
+    upd = f"({st_r.hash_updates} updates)"
+    spu = f"({st_r.spurious} spurious)"
+    print(f"{'windows':<12}|{st_n.windows:>4}{'':<17}|{st_r.windows:>5}  {upd:<16}| {st_b.windows:>3}")
+    print(f"{'comparisons':<12}|{st_n.comparisons:>4}{'':<17}|{st_r.comparisons:>5}  {spu:<16}| {st_b.comparisons:>3}")
+    print("All three report the keyword at shift 4.")
+
+
+def run_trace(which):
+    if which == "all":
+        run_trace_all()
+        return
+    text, pat = EXCERPT, EXCERPT_PAT
+    n, m = len(text), len(pat)
+    print(f'Text T    = {show(text)}   n = {n}')
+    print(f'Pattern P = {show(pat)}   m = {m}')
+    rule("=")
+    st = Stats()
+    rows = []
+    if which == "naive":
+        print("NAIVE STRING MATCHING (left to right, shift by 1 every time)")
+        rule()
+        print(f"{'s':>3}  {'window':<8}{'comparisons':>12}   result")
+        hits = naive_search(text, pat, st, rows)
+        for s, win, used, j in rows:
+            res = "MATCH" if j == m else f"mismatch at j = {j} ({show(win[j])} vs {show(pat[j])})"
+            print(f"{s:>3}  {show(win):<8}{used:>12}   {res}")
+    elif which == "rk":
+        q = Q_DEMO
+        h = pow(D, m - 1, q)
+        p = poly_hash(pat, q)
+        print(f"RABIN-KARP (d = {D}, q = {q})")
+        print(f"h = d^(m-1) mod q = {D}^{m - 1} mod {q} = {h}")
+        print(f"p = hash({show(pat)}) = {p}")
+        print("ASCII codes: " + "  ".join(f"{'space' if c == ' ' else c}={ord(c)}" for c in sorted(set(text))))
+        rule()
+        print(f"{'s':>3}  {'window':<8}{'t(s)':>6}   {'t(s) = p ?':<11} result")
+        hits = rabin_karp_search(text, pat, st, q, rows)
+        for s, win, t, status in rows:
+            eq = "yes" if t == p else "no"
+            res = {"MATCH": "verified, MATCH", "SPURIOUS": "verified, SPURIOUS HIT"}.get(status, "skip")
+            print(f"{s:>3}  {show(win):<8}{t:>6}   {eq:<11} {res}")
+    else:
+        last = bad_char_table(pat)
+        gs = good_suffix_table(pat)
+        print("BOYER-MOORE (compare right to left, shift = max(bad character, good suffix))")
+        print("bad character table : " + ", ".join(f"{show(c)} -> {i}" for c, i in last.items())
+              + ", any other -> -1")
+        print("good suffix shift[] : " + ", ".join(f"[{i}]={v}" for i, v in enumerate(gs)))
+        rule()
+        print(f"{'s':>3}  {'window':<8}{'comparisons':>12}  {'mismatch':<14}{'bad char':>9}"
+              f"{'good suf':>9}{'shift':>7}")
+        hits = boyer_moore_search(text, pat, st, rows)
+        for s, win, used, j, bad, bc, g, shift in rows:
+            mis = "none (MATCH)" if j < 0 else f"j={j}, {show(bad)}"
+            bcs = "-" if bc is None else str(bc)
+            print(f"{s:>3}  {show(win):<8}{used:>12}  {mis:<14}{bcs:>9}{g:>9}{shift:>7}")
+    rule()
+    extra = f", hash updates = {st.hash_updates}, spurious hits = {st.spurious}" if which == "rk" else ""
+    print(f"windows examined = {st.windows}, character comparisons = {st.comparisons}{extra}")
+    print(f"pattern found at shift(s): {hits}")

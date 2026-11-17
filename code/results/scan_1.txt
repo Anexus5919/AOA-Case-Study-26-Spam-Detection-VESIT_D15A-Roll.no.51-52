@@ -1,0 +1,32 @@
+Message 1: "URGENT: You are a WINNER!"
+  URGENT: You are a WINNER! Dear customer, congratulations! Your email ID was picked in
+  our online lottery and you have won a cash prize of Rs 5,00,000. To claim your prize,
+  click here and verify your bank account details within 24 hours. This is a limited time
+  offer, so act now. Registration is 100% free and there are no hidden charges.
+After lower-casing: n = 337 characters.  Keyword list: k = 13 patterns
+============================================================================================
+keyword               m  count  positions (0-based index in the message)
+--------------------------------------------------------------------------------------------
+urgent                6      1  [0]
+winner                6      1  [18]
+congratulations      15      1  [41]
+lottery               7      1  [97]
+cash prize           10      1  [124]
+claim your prize     16      1  [154]
+click here           10      1  [172]
+bank account         12      1  [199]
+verify                6      1  [187]
+limited time         12      1  [247]
+act now               7      1  [270]
+100% free             9      1  [295]
+free                  4      1  [300]
+--------------------------------------------------------------------------------------------
+algorithm                    windows  char comparisons  hash updates  time (ms)
+Naive (k passes)                4274              4483             -      0.461
+Rabin-Karp (k passes)           4274               120          4261      0.951
+Boyer-Moore (k passes)           666               814             -      0.210
+Rabin-Karp multi (1 pass)        334               120           333      0.151
+--------------------------------------------------------------------------------------------
+All four runs report identical positions: YES
+Distinct keywords found = 13 of 13, total occurrences = 13
+Rule: SPAM if distinct keywords >= 3   ->   VERDICT: SPAM

@@ -1,0 +1,17 @@
+Performance on different input conditions (time = best of 3 runs, Python 3.12)
+============================================================================================
+Keyword list of k = 13 patterns on the email corpus (n = 100,000)
+  algorithm                     windows  comparisons  hash updates  time (ms)
+  Naive, k passes             1,299,893    1,343,273             -      158.5
+  Boyer-Moore, k passes         199,478      226,270             -       53.1
+  Rabin-Karp, k passes        1,299,893       10,303     1,299,880      310.7
+  Rabin-Karp multi, 1 pass       99,997       10,996        99,996       26.2
+  occurrences found = 1,195, identical results from all four: YES
+
+Keyword list of k = 100 patterns on the email corpus (n = 100,000)
+  algorithm                     windows  comparisons  hash updates  time (ms)
+  Naive, k passes             9,998,947   10,454,664             -     1257.2
+  Boyer-Moore, k passes       1,301,819    1,412,833             -      340.4
+  Rabin-Karp, k passes        9,998,947       19,841     9,998,847     2433.0
+  Rabin-Karp multi, 1 pass       99,997       45,444        99,996       28.9
+  occurrences found = 1,927, identical results from all four: YES

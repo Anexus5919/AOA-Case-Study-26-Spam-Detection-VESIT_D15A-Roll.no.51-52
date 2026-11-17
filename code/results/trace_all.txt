@@ -1,0 +1,28 @@
+Text T = "get free offers here"  (n = 20)      Pattern P = "free"  (m = 4)
+Rabin-Karp : d = 256, q = 13, h = 256^3 mod 13 = 1, p = hash("free") = 11
+Boyer-Moore: last[] = f:0, r:1, e:3, others:-1    good suffix gs[0..4] = 4 4 4 1 2
+============================================================================================
+            | NAIVE               | RABIN-KARP            | BOYER-MOORE
+  s  window | cmp  result         | t(s)  result          | cmp  bad char  good suf  shift
+--------------------------------------------------------------------------------------------
+  0  "get " |   1  fail at j=0    |    0  -               |   1         4         2      4
+  1  "et f" |   1  fail at j=0    |    7  -               |   skipped
+  2  "t fr" |   1  fail at j=0    |    9  -               |   skipped
+  3  " fre" |   1  fail at j=0    |    9  -               |   skipped
+  4  "free" |   4  MATCH          |   11  hit, MATCH      |   4         -         4      4
+  5  "ree " |   1  fail at j=0    |    6  -               |   skipped
+  6  "ee o" |   1  fail at j=0    |   10  -               |   skipped
+  7  "e of" |   1  fail at j=0    |   11  hit, SPURIOUS   |   skipped
+  8  " off" |   1  fail at j=0    |    7  -               |   1         3         2      3
+  9  "offe" |   1  fail at j=0    |    6  -               |   skipped
+ 10  "ffer" |   2  fail at j=1    |    1  -               |   skipped
+ 11  "fers" |   2  fail at j=1    |   12  -               |   1         4         2      4
+ 12  "ers " |   1  fail at j=0    |    2  -               |   skipped
+ 13  "rs h" |   1  fail at j=0    |    6  -               |   skipped
+ 14  "s he" |   1  fail at j=0    |    0  -               |   skipped
+ 15  " her" |   1  fail at j=0    |    2  -               |   1         2         2      2
+ 16  "here" |   1  fail at j=0    |    0  -               |   skipped
+--------------------------------------------------------------------------------------------
+windows     |  17                 |   17  (16 updates)    |   5
+comparisons |  22                 |    5  (1 spurious)    |   8
+All three report the keyword at shift 4.

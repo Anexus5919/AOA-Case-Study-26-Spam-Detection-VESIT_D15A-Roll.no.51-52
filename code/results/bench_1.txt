@@ -1,0 +1,22 @@
+Performance on different input conditions (time = best of 3 runs, Python 3.12)
+============================================================================================
+A. Email text, short pattern:  n = 100,000, P = "free", m = 4
+  algorithm        windows   comparisons  hash updates  matches  time (ms)
+  Naive             99,997       102,272             -      220       11.9
+  Rabin-Karp        99,997           880        99,996      220       23.8
+  Boyer-Moore       26,604        30,272             -      220        7.3
+B. Email text, long pattern:  n = 100,000, P = "verify your bank account", m = 24
+  algorithm        windows   comparisons  hash updates  matches  time (ms)
+  Naive             99,977       103,189             -       81       11.7
+  Rabin-Karp        99,977         1,944        99,976       81       22.9
+  Boyer-Moore        6,822        10,168             -       81        1.7
+C. Repetitive text 'aaaa...', pattern absent:  n = 100,000, P = "aaaaaaab", m = 8
+  algorithm        windows   comparisons  hash updates  matches  time (ms)
+  Naive             99,993       799,944             -        0       47.6
+  Rabin-Karp        99,993             0        99,992        0       23.1
+  Boyer-Moore       99,993        99,993             -        0       23.4
+D. Repetitive text 'aaaa...', pattern everywhere:  n = 100,000, P = "aaaaaaaa", m = 8
+  algorithm        windows   comparisons  hash updates  matches  time (ms)
+  Naive             99,993       799,944             -   99,993       48.7
+  Rabin-Karp        99,993       799,944        99,992   99,993       74.2
+  Boyer-Moore       99,993       799,944             -   99,993       51.3

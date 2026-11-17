@@ -1,0 +1,16 @@
+Text T    = "get free offers here"   n = 20
+Pattern P = "free"   m = 4
+============================================================================================
+BOYER-MOORE (compare right to left, shift = max(bad character, good suffix))
+bad character table : "f" -> 0, "r" -> 1, "e" -> 3, any other -> -1
+good suffix shift[] : [0]=4, [1]=4, [2]=4, [3]=1, [4]=2
+--------------------------------------------------------------------------------------------
+  s  window   comparisons  mismatch       bad char good suf  shift
+  0  "get "             1  j=3, " "              4        2      4
+  4  "free"             4  none (MATCH)          -        4      4
+  8  " off"             1  j=3, "f"              3        2      3
+ 11  "fers"             1  j=3, "s"              4        2      4
+ 15  " her"             1  j=3, "r"              2        2      2
+--------------------------------------------------------------------------------------------
+windows examined = 5, character comparisons = 8
+pattern found at shift(s): [4]

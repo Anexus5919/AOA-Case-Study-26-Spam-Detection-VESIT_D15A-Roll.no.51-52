@@ -1,0 +1,21 @@
+Message 2: "AOA lab moved to Friday"
+  Hi all, the AOA lab session on string matching has been moved to Friday, 10 am, in Lab
+  3. Please bring your laptops with the Naive, Rabin-Karp and Boyer-Moore programs ready.
+  Feel free to mail me if you have any doubts before the session. Regards, Lab Assistant
+After lower-casing: n = 261 characters.  Keyword list: k = 13 patterns
+============================================================================================
+keyword               m  count  positions (0-based index in the message)
+--------------------------------------------------------------------------------------------
+free                  4      1  [180]
+not found: urgent, winner, congratulations, lottery, cash prize, claim your prize, click
+here, bank account, verify, limited time, act now, 100% free
+--------------------------------------------------------------------------------------------
+algorithm                    windows  char comparisons  hash updates  time (ms)
+Naive (k passes)                3286              3361             -      0.359
+Rabin-Karp (k passes)           3286                 4          3273      0.747
+Boyer-Moore (k passes)           513               553             -      0.171
+Rabin-Karp multi (1 pass)        258                 4           257      0.078
+--------------------------------------------------------------------------------------------
+All four runs report identical positions: YES
+Distinct keywords found = 1 of 13, total occurrences = 1
+Rule: SPAM if distinct keywords >= 3   ->   VERDICT: NOT SPAM

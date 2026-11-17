@@ -1,0 +1,26 @@
+Text T    = "get free offers here"   n = 20
+Pattern P = "free"   m = 4
+============================================================================================
+NAIVE STRING MATCHING (left to right, shift by 1 every time)
+--------------------------------------------------------------------------------------------
+  s  window   comparisons   result
+  0  "get "             1   mismatch at j = 0 ("g" vs "f")
+  1  "et f"             1   mismatch at j = 0 ("e" vs "f")
+  2  "t fr"             1   mismatch at j = 0 ("t" vs "f")
+  3  " fre"             1   mismatch at j = 0 (" " vs "f")
+  4  "free"             4   MATCH
+  5  "ree "             1   mismatch at j = 0 ("r" vs "f")
+  6  "ee o"             1   mismatch at j = 0 ("e" vs "f")
+  7  "e of"             1   mismatch at j = 0 ("e" vs "f")
+  8  " off"             1   mismatch at j = 0 (" " vs "f")
+  9  "offe"             1   mismatch at j = 0 ("o" vs "f")
+ 10  "ffer"             2   mismatch at j = 1 ("f" vs "r")
+ 11  "fers"             2   mismatch at j = 1 ("e" vs "r")
+ 12  "ers "             1   mismatch at j = 0 ("e" vs "f")
+ 13  "rs h"             1   mismatch at j = 0 ("r" vs "f")
+ 14  "s he"             1   mismatch at j = 0 ("s" vs "f")
+ 15  " her"             1   mismatch at j = 0 (" " vs "f")
+ 16  "here"             1   mismatch at j = 0 ("h" vs "f")
+--------------------------------------------------------------------------------------------
+windows examined = 17, character comparisons = 22
+pattern found at shift(s): [4]

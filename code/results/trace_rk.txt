@@ -1,0 +1,29 @@
+Text T    = "get free offers here"   n = 20
+Pattern P = "free"   m = 4
+============================================================================================
+RABIN-KARP (d = 256, q = 13)
+h = d^(m-1) mod q = 256^3 mod 13 = 1
+p = hash("free") = 11
+ASCII codes: space=32  e=101  f=102  g=103  h=104  o=111  r=114  s=115  t=116
+--------------------------------------------------------------------------------------------
+  s  window    t(s)   t(s) = p ?  result
+  0  "get "       0   no          skip
+  1  "et f"       7   no          skip
+  2  "t fr"       9   no          skip
+  3  " fre"       9   no          skip
+  4  "free"      11   yes         verified, MATCH
+  5  "ree "       6   no          skip
+  6  "ee o"      10   no          skip
+  7  "e of"      11   yes         verified, SPURIOUS HIT
+  8  " off"       7   no          skip
+  9  "offe"       6   no          skip
+ 10  "ffer"       1   no          skip
+ 11  "fers"      12   no          skip
+ 12  "ers "       2   no          skip
+ 13  "rs h"       6   no          skip
+ 14  "s he"       0   no          skip
+ 15  " her"       2   no          skip
+ 16  "here"       0   no          skip
+--------------------------------------------------------------------------------------------
+windows examined = 17, character comparisons = 5, hash updates = 16, spurious hits = 1
+pattern found at shift(s): [4]

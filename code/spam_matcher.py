@@ -94,3 +94,43 @@ def rabin_karp_search(text, pat, st, q=Q_LARGE, trace=None):
             t = (D * (t - ord(text[s]) * h) + ord(text[s + m])) % q
             st.hash_updates += 1
     return hits
+
+
+def rabin_karp_multi(text, patterns, st, q=Q_LARGE):
+    """One pass over the text for the whole keyword list.
+
+    Each pattern is fingerprinted by the hash of its first L characters, where
+    L is the length of the shortest pattern. A window whose hash is in the
+    table is checked against every full pattern that shares that hash.
+    """
+    found = {pat: [] for pat in patterns}
+    n = len(text)
+    L = min(len(pat) for pat in patterns)
+    if L > n:
+        return found
+    table = {}
+    for pat in patterns:
+        table.setdefault(poly_hash(pat[:L], q), []).append(pat)
+    h = pow(D, L - 1, q)
+    t = poly_hash(text[:L], q)
+    for s in range(n - L + 1):
+        st.windows += 1
+        cands = table.get(t)
+        if cands:
+            st.hash_hits += 1
+            for pat in cands:
+                m = len(pat)
+                if s + m > n:
+                    continue
+                j = 0
+                while j < m and text[s + j] == pat[j]:
+                    j += 1
+                st.comparisons += j + 1 if j < m else m
+                if j == m:
+                    found[pat].append(s)
+                else:
+                    st.spurious += 1
+        if s < n - L:
+            t = (D * (t - ord(text[s]) * h) + ord(text[s + L])) % q
+            st.hash_updates += 1
+    return found

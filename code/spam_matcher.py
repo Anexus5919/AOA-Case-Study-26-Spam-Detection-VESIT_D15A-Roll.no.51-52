@@ -168,3 +168,33 @@ def good_suffix_table(pat):
         if i == j:
             j = border[j]
     return shift
+
+
+def boyer_moore_search(text, pat, st, trace=None):
+    n, m = len(text), len(pat)
+    if m == 0 or m > n:
+        return []
+    last = bad_char_table(pat)
+    gs = good_suffix_table(pat)
+    hits = []
+    s = 0
+    while s <= n - m:
+        st.windows += 1
+        j = m - 1
+        while j >= 0 and pat[j] == text[s + j]:   # compare right to left
+            j -= 1
+        if j < 0:
+            st.comparisons += m
+            hits.append(s)
+            bc, g, shift = None, gs[0], gs[0]
+        else:
+            st.comparisons += m - j
+            bc = j - last.get(text[s + j], -1)
+            g = gs[j + 1]
+            shift = max(bc, g)
+        if trace is not None:
+            used = m if j < 0 else m - j
+            bad = "" if j < 0 else text[s + j]
+            trace.append((s, text[s:s + m], used, j, bad, bc, g, shift))
+        s += shift
+    return hits

@@ -134,3 +134,37 @@ def rabin_karp_multi(text, patterns, st, q=Q_LARGE):
             t = (D * (t - ord(text[s]) * h) + ord(text[s + L])) % q
             st.hash_updates += 1
     return found
+
+
+# ---------------------------------------------------------------- Boyer-Moore
+
+def bad_char_table(pat):
+    """Last index of every character in the pattern (absent characters give -1)."""
+    last = {}
+    for i, ch in enumerate(pat):
+        last[ch] = i
+    return last
+
+
+def good_suffix_table(pat):
+    """Strong good suffix shifts: shift[j+1] after a mismatch at j, shift[0] after a match."""
+    m = len(pat)
+    shift = [0] * (m + 1)
+    border = [0] * (m + 1)
+    i, j = m, m + 1
+    border[i] = j
+    while i > 0:
+        while j <= m and pat[i - 1] != pat[j - 1]:
+            if shift[j] == 0:
+                shift[j] = j - i
+            j = border[j]
+        i -= 1
+        j -= 1
+        border[i] = j
+    j = border[0]
+    for i in range(m + 1):
+        if shift[i] == 0:
+            shift[i] = j
+        if i == j:
+            j = border[j]
+    return shift

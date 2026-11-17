@@ -198,3 +198,67 @@ def boyer_moore_search(text, pat, st, trace=None):
             trace.append((s, text[s:s + m], used, j, bad, bc, g, shift))
         s += shift
     return hits
+
+
+# ---------------------------------------------------------------- sample data
+
+KEYWORDS = [
+    "urgent", "winner", "congratulations", "lottery", "cash prize",
+    "claim your prize", "click here", "bank account", "verify",
+    "limited time", "act now", "100% free", "free",
+]
+
+EMAILS = {
+    "1": ("URGENT: You are a WINNER!",
+          "URGENT: You are a WINNER! Dear customer, congratulations! Your email ID was "
+          "picked in our online lottery and you have won a cash prize of Rs 5,00,000. "
+          "To claim your prize, click here and verify your bank account details within "
+          "24 hours. This is a limited time offer, so act now. Registration is 100% free "
+          "and there are no hidden charges."),
+    "2": ("AOA lab moved to Friday",
+          "Hi all, the AOA lab session on string matching has been moved to Friday, "
+          "10 am, in Lab 3. Please bring your laptops with the Naive, Rabin-Karp and "
+          "Boyer-Moore programs ready. Feel free to mail me if you have any doubts "
+          "before the session. Regards, Lab Assistant"),
+}
+
+SPAM_THRESHOLD = 3   # distinct keywords needed to flag a message as spam
+
+EXCERPT = "get free offers here"
+EXCERPT_PAT = "free"
+
+CORPUS_PIECES = [
+    EMAILS["1"][1], EMAILS["2"][1],
+    "Your account has been suspended. Update your details today to avoid closure "
+    "of your account. This is an automated message, do not reply.",
+    "Team, please find attached the minutes of yesterday's meeting. The next review "
+    "is on Monday and each group should present the progress of their case study.",
+    "Exclusive deal for you! Buy one get one free on all orders placed before midnight. "
+    "Use the coupon at checkout and save big on your next purchase.",
+    "Dear student, the semester fee receipt is now available on the portal. Contact "
+    "the accounts office if the amount shown does not match your records.",
+    "Earn extra cash from home! Work just two hours a day and make money fast. "
+    "No experience needed, no investment, guaranteed income every week.",
+    "Reminder: the library will remain closed on Saturday for maintenance. Books "
+    "due on that day can be returned on Monday without any fine.",
+]
+
+MORE_KEYWORDS = [
+    "act immediately", "additional income", "affordable", "all natural", "amazing",
+    "apply now", "as seen on", "bargain", "being a member", "best price", "big bucks",
+    "billion dollars", "buy direct", "call now", "cancel at any time", "cash bonus",
+    "certified", "cheap", "click below", "credit card", "dear friend", "discount",
+    "do it today", "double your income", "earn extra cash", "earn money", "easy terms",
+    "eliminate debt", "exclusive deal", "expires today", "extra income", "fast cash",
+    "for only", "free access", "free gift", "free money", "free trial", "full refund",
+    "get it now", "get paid", "gift card", "guaranteed", "hidden assets", "huge discount",
+    "important information", "income from home", "increase sales", "inheritance",
+    "instant access", "investment opportunity", "lose weight", "lowest price", "luxury",
+    "make money", "million dollars", "miracle", "money back", "no catch", "no cost",
+    "no credit check", "no fees", "no hidden charges", "offer expires", "once in a lifetime",
+    "online pharmacy", "order now", "password", "pre-approved", "pure profit", "refinance",
+    "reward", "risk free", "satisfaction guaranteed", "save big", "special offer",
+    "special promotion", "suspended", "this is not spam", "unclaimed", "update your details",
+    "verify your account", "wire transfer", "work from home", "you are a winner",
+    "you have been selected", "your account", "50% off",
+]

@@ -363,3 +363,58 @@ def run_trace(which):
     extra = f", hash updates = {st.hash_updates}, spurious hits = {st.spurious}" if which == "rk" else ""
     print(f"windows examined = {st.windows}, character comparisons = {st.comparisons}{extra}")
     print(f"pattern found at shift(s): {hits}")
+
+
+def run_scan(key):
+    subject, body = EMAILS[key]
+    text = body.lower()                    # case-insensitive matching
+    n = len(text)
+    print(f"Message {key}: {show(subject)}")
+    for line in textwrap.wrap(body, 88):
+        print("  " + line)
+    print(f"After lower-casing: n = {n} characters.  Keyword list: k = {len(KEYWORDS)} patterns")
+    rule("=")
+
+    results = {}
+    timings = {}
+    stats = {}
+    for name, fn in (("Naive (k passes)", naive_search),
+                     ("Rabin-Karp (k passes)", rabin_karp_search),
+                     ("Boyer-Moore (k passes)", boyer_moore_search)):
+        st = Stats()
+        t0 = time.perf_counter()
+        found = {pat: fn(text, pat, st) for pat in KEYWORDS}
+        timings[name] = (time.perf_counter() - t0) * 1000
+        results[name], stats[name] = found, st
+    st = Stats()
+    t0 = time.perf_counter()
+    found = rabin_karp_multi(text, KEYWORDS, st)
+    name = "Rabin-Karp multi (1 pass)"
+    timings[name] = (time.perf_counter() - t0) * 1000
+    results[name], stats[name] = found, st
+
+    ref = results["Naive (k passes)"]
+    print(f"{'keyword':<20}{'m':>3}  {'count':>5}  positions (0-based index in the message)")
+    rule()
+    for pat in KEYWORDS:
+        pos = ref[pat]
+        if pos:
+            print(f"{pat:<20}{len(pat):>3}  {len(pos):>5}  {pos}")
+    missing = [pat for pat in KEYWORDS if not ref[pat]]
+    if missing:
+        for line in textwrap.wrap("not found: " + ", ".join(missing), 90):
+            print(line)
+    rule()
+    print(f"{'algorithm':<27}{'windows':>9}{'char comparisons':>18}{'hash updates':>14}{'time (ms)':>11}")
+    for name in results:
+        s = stats[name]
+        hu = str(s.hash_updates) if "Rabin" in name else "-"
+        print(f"{name:<27}{s.windows:>9}{s.comparisons:>18}{hu:>14}{timings[name]:>11.3f}")
+    rule()
+    same = all(results[name] == ref for name in results)
+    print(f"All four runs report identical positions: {'YES' if same else 'NO'}")
+    distinct = [pat for pat in KEYWORDS if ref[pat]]
+    total = sum(len(ref[pat]) for pat in KEYWORDS)
+    verdict = "SPAM" if len(distinct) >= SPAM_THRESHOLD else "NOT SPAM"
+    print(f"Distinct keywords found = {len(distinct)} of {len(KEYWORDS)}, total occurrences = {total}")
+    print(f"Rule: SPAM if distinct keywords >= {SPAM_THRESHOLD}   ->   VERDICT: {verdict}")

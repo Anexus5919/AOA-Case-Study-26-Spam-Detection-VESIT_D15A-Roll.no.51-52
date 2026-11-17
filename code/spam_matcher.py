@@ -491,3 +491,48 @@ def run_bench(part="all"):
         bench_multi(corpus, KEYWORDS)
         print()
         bench_multi(corpus, KEYWORDS + MORE_KEYWORDS)
+
+
+class Tee:
+    """Writes everything printed to the console into a results file as well."""
+
+    def __init__(self, *streams):
+        self.streams = streams
+
+    def write(self, s):
+        for st in self.streams:
+            st.write(s)
+
+    def flush(self):
+        for st in self.streams:
+            st.flush()
+
+
+def main(argv):
+    if len(argv) >= 2 and argv[1] in ("trace", "scan", "bench"):
+        out_dir = Path(__file__).resolve().parent / "results"
+        out_dir.mkdir(exist_ok=True)
+        out_file = out_dir / ("_".join(argv[1:3]) + ".txt")
+        with open(out_file, "w", encoding="utf-8") as fh:
+            console = sys.stdout
+            sys.stdout = Tee(console, fh)
+            try:
+                dispatch(argv)
+            finally:
+                sys.stdout = console
+        print(f"(output also saved to results/{out_file.name})")
+    else:
+        print(__doc__)
+
+
+def dispatch(argv):
+    if argv[1] == "trace":
+        run_trace(argv[2] if len(argv) > 2 else "naive")
+    elif argv[1] == "scan":
+        run_scan(argv[2] if len(argv) > 2 else "1")
+    else:
+        run_bench(argv[2] if len(argv) > 2 else "all")
+
+
+if __name__ == "__main__":
+    main(sys.argv)

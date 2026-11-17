@@ -1,0 +1,6 @@
+# report build sources are kept local; the finished PDF is committed
+report/
+
+__pycache__/
+*.pyc
+node_modules/

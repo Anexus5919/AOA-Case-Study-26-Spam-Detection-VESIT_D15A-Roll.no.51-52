@@ -418,3 +418,76 @@ def run_scan(key):
     verdict = "SPAM" if len(distinct) >= SPAM_THRESHOLD else "NOT SPAM"
     print(f"Distinct keywords found = {len(distinct)} of {len(KEYWORDS)}, total occurrences = {total}")
     print(f"Rule: SPAM if distinct keywords >= {SPAM_THRESHOLD}   ->   VERDICT: {verdict}")
+
+
+def build_corpus(size, seed=26):
+    rnd = random.Random(seed)
+    parts, total = [], 0
+    while total < size:
+        piece = rnd.choice(CORPUS_PIECES).lower()
+        parts.append(piece)
+        total += len(piece) + 1
+    return " ".join(parts)[:size]
+
+
+def timed(fn, *args):
+    best = None
+    for _ in range(3):
+        st = Stats()
+        t0 = time.perf_counter()
+        out = fn(*args, st)
+        dt = (time.perf_counter() - t0) * 1000
+        if best is None or dt < best[0]:
+            best = (dt, st, out)
+    return best
+
+
+def bench_single(title, text, pat):
+    print(f"{title}:  n = {len(text):,}, P = {show(pat)}, m = {len(pat)}")
+    print(f"  {'algorithm':<14}{'windows':>10}{'comparisons':>14}{'hash updates':>14}{'matches':>9}{'time (ms)':>11}")
+    for name, fn in (("Naive", naive_search), ("Rabin-Karp", rabin_karp_search),
+                     ("Boyer-Moore", boyer_moore_search)):
+        dt, st, hits = timed(lambda t, p, s, f=fn: f(t, p, s), text, pat)
+        hu = f"{st.hash_updates:,}" if name == "Rabin-Karp" else "-"
+        print(f"  {name:<14}{st.windows:>10,}{st.comparisons:>14,}{hu:>14}{len(hits):>9,}{dt:>11.1f}")
+
+
+def bench_multi(text, patterns):
+    print(f"Keyword list of k = {len(patterns)} patterns on the email corpus (n = {len(text):,})")
+    print(f"  {'algorithm':<26}{'windows':>11}{'comparisons':>13}{'hash updates':>14}{'time (ms)':>11}")
+
+    def per_pattern(fn):
+        def run(t, pats, st):
+            return {p: fn(t, p, st) for p in pats}
+        return run
+
+    rows = (("Naive, k passes", per_pattern(naive_search)),
+            ("Boyer-Moore, k passes", per_pattern(boyer_moore_search)),
+            ("Rabin-Karp, k passes", per_pattern(rabin_karp_search)),
+            ("Rabin-Karp multi, 1 pass", rabin_karp_multi))
+    outs = []
+    for name, fn in rows:
+        dt, st, out = timed(fn, text, patterns)
+        outs.append(out)
+        hu = f"{st.hash_updates:,}" if "Rabin" in name else "-"
+        print(f"  {name:<26}{st.windows:>11,}{st.comparisons:>13,}{hu:>14}{dt:>11.1f}")
+    same = all(o == outs[0] for o in outs)
+    total = sum(len(v) for v in outs[0].values())
+    print(f"  occurrences found = {total:,}, identical results from all four: {'YES' if same else 'NO'}")
+
+
+def run_bench(part="all"):
+    corpus = build_corpus(100_000)
+    print("Performance on different input conditions (time = best of 3 runs, Python 3.12)")
+    rule("=")
+    if part in ("1", "all"):
+        bench_single("A. Email text, short pattern", corpus, "free")
+        bench_single("B. Email text, long pattern", corpus, "verify your bank account")
+        bench_single("C. Repetitive text 'aaaa...', pattern absent", "a" * 100_000, "aaaaaaab")
+        bench_single("D. Repetitive text 'aaaa...', pattern everywhere", "a" * 100_000, "aaaaaaaa")
+    if part == "all":
+        rule()
+    if part in ("2", "all"):
+        bench_multi(corpus, KEYWORDS)
+        print()
+        bench_multi(corpus, KEYWORDS + MORE_KEYWORDS)
